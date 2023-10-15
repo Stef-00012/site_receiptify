@@ -41,6 +41,7 @@ jobs:
 
   automerge:
     runs-on: ubuntu-latest
+    name: Automerge pull request
 
     steps:
       - name: automerge
