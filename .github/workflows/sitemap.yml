@@ -5,7 +5,7 @@ on:
     branches: [ main ]
 
 jobs:
-  - sitemap_job:
+  sitemap_job:
     runs-on: ubuntu-latest
     name: Generate a sitemap
 
@@ -39,14 +39,16 @@ jobs:
     
     - name: Output stats
 
-  - automerge:
+  automerge:
     runs-on: ubuntu-latest
+
     steps:
-      - id: automerge
-        name: automerge
+      - name: automerge
+        id: automerge
         uses: "pascalgn/automerge-action@v0.15.6"
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          
       run: |
         echo "sitemap-path = ${{ steps.sitemap.outputs.sitemap-path }}"
         echo "url-count = ${{ steps.sitemap.outputs.url-count }}"
