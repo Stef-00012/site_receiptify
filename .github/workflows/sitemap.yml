@@ -5,7 +5,7 @@ on:
     branches: [ main ]
 
 jobs:
-  sitemap_job:
+  - sitemap_job:
     runs-on: ubuntu-latest
     name: Generate a sitemap
 
@@ -39,7 +39,7 @@ jobs:
     
     - name: Output stats
 
-  automerge:
+  - automerge:
     runs-on: ubuntu-latest
     steps:
       - id: automerge
