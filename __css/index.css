@@ -69,6 +69,7 @@ table {
     max-width: 400px;
     margin: 0 auto;
     padding: 20px;
+    padding-bottom: 0;
     border: 1px solid #ccc;
     border-radius: 5px;
     background-color: #f9f9f9;
@@ -78,6 +79,7 @@ label {
     display: block;
     margin-bottom: 5px;
     font-weight: bold;
+    cursor:text
 }
 
 input,
@@ -126,8 +128,20 @@ button.download {
     cursor: pointer;
 }
 
+button.spotify:disabled {
+    background-color: rgba(30, 171, 79, 0.647);
+    cursor: not-allowed;
+}
+
 button[type="submit"]:hover {
     background-color: #0056b3;
+}
+
+p.note {
+    font-weight: bold;
+    margin-top: 10px;
+    margin-bottom: 0;
+    padding-bottom: 0;
 }
 
 #thanksInput {
