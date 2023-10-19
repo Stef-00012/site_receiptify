@@ -28,7 +28,7 @@ if (userParam) {
     if (thanksParam) query += `&thanks=${thanksParam}`
     if (orderParam) query += `&order=${orderParam}`
 
-    fetch(`https://api.stefdp.is-a.dev/last.fm/receiptData/${query}`).then(res => res.json()).then(data => {
+    fetch(`https://api.stefdp.is-a.dev/receiptData/last.fm/${query}`).then(res => res.json()).then(data => {
         if (data.message) {
             console.log(data.message)
             form.innerText = data.message
