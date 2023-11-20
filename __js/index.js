@@ -2,9 +2,17 @@ const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Frida
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
 const form = document.getElementById('inputData')
+const spotifyButton = document.getElementById('spotifyLogin')
 const downloadButton = document.getElementById('downloadButton')
 
 const query = getQueryParams(window.location.href)
+const hashParams = getHashParams()
+
+const stateKey = 'spotify_auth_state'
+
+const accessToken = hashParams.access_token,
+    state = hashParams.state,
+    storedState = localStorage.getItem(stateKey)
     
 const orderParam = query.order
 const authCodeParam = query.authCode
@@ -41,8 +49,29 @@ if (userParam) {
         console.log(e)
         form.innerText = 'Something went wrong'
     })
+} else if (accessToken) {
+    if (state && state == storedState) {
+        localStorage.removeItem(stateKey)
+        
+        if (accessToken) {
+            fetch(`https://api.stefdp.is-a.dev/receiptData/spotify?accessToken=${accessToken}`).then(res => res.json()).then(data => {
+                if (data.message) {
+                    console.log(data.message)
+                    form.innerText = data.message
+
+                    return;
+                }
+
+                showData(data)
+            }).catch(e => {
+                console.log(e)
+                form.innerText = 'Something went wrong'
+            })
+        }
+    }
 }
 
+spotifyButton.onclick = spotifyLogin
 downloadButton.onclick = downloadReceipt
 
 function downloadReceipt() {
@@ -74,6 +103,30 @@ function downloadReceipt() {
     receipt.style.background = '#ffffff00'
 
     downloadButton.style.display = 'block'
+}
+
+function spotifyLogin() {
+    const clientId = 'e8ed68a2e9414910acec38a6aee777dd'
+    const redirectUri = 'https://receiptify.is-a.dev'
+    // const redirectUri = 'http://localhost:5500'
+
+    const state = generateRandomString(16)
+
+    localStorage.setItem(stateKey, state)
+    const scope = 'user-top-read user-read-private'
+
+    const urlParams = [
+        'https://accounts.spotify.com/authorize',
+        '?response_type=token',
+        `&client_id=${encodeURIComponent(clientId)}`,
+        `&scope=${encodeURIComponent(scope)}`,
+        `&redirect_uri=${encodeURIComponent(redirectUri)}`,
+        `&state=${encodeURIComponent(state)}`
+    ]
+
+    let url = urlParams.join('')
+
+    window.location = url;
 }
 
 function validate(type, input) {
@@ -114,6 +167,30 @@ function validate(type, input) {
             break;
         }
     }
+}
+
+function getHashParams() {
+    var params = {}
+    
+    let exec,
+        regex = /([^&;=]+)=?([^&;]*)/g,
+        hash = window.location.hash.substring(1)
+        
+    while ( exec = regex.exec(hash)) {
+        params[exec[1]] = decodeURIComponent(exec[2])
+    }
+    
+    return params
+}
+
+function generateRandomString(length) {
+    let text = ''
+    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    
+    for (let i = 0; i < length; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length))
+    }
+    return text
 }
 
 function convertMsToTime(ms) {
