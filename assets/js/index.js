@@ -5,38 +5,40 @@ const form = document.getElementById('inputData')
 const spotifyButton = document.getElementById('spotifyLogin')
 const downloadButton = document.getElementById('downloadButton')
 
-const query = getQueryParams(window.location.href)
+const apiUrl = 'api.stefdp.lol'
+
+const queryParams = new URL(window.location.href).searchParams
 const hashParams = getHashParams()
 
 const stateKey = 'spotify_auth_state'
 
-const accessToken = hashParams.access_token,
-    state = hashParams.state,
-    storedState = localStorage.getItem(stateKey)
-    
-const orderParam = query.order
-const authCodeParam = query.authCode
-const cardHolderParam = query.cardHolder
-const thanksParam = query.thanks
-const userParam = query.user
-const trackCountParam = query.trackCount
-const periodParam = query.period
+const accessToken = hashParams.access_token
+const state = hashParams.state
+const storedState = localStorage.getItem(stateKey)
+
+const orderParam = queryParams.get('order')
+const authCodeParam = queryParams.get('authCode')
+const cardHolderParam = queryParams.get('cardHolder')
+const thanksParam = queryParams.get('thanks')
+const userParam = queryParams.get('user')
+const trackCountParam = queryParams.get('trackCount')
+const periodParam = queryParams.get('period')
 
 if (userParam) {
     form.setAttribute('disabled', '')
     
     form.innerText = 'Fetching...'
 
-    let query = `?user=${userParam}`
+    let lastFmQuery = `?user=${userParam}`
 
-    if (trackCountParam) query += `&trackCount=${trackCountParam}`
-    if (periodParam) query += `&period=${periodParam}`
-    if (cardHolderParam) query += `&cardHolder=${cardHolderParam}`
-    if (authCodeParam) query += `&authCode=${authCodeParam}`
-    if (thanksParam) query += `&thanks=${thanksParam}`
-    if (orderParam) query += `&order=${orderParam}`
+    if (trackCountParam) lastFmQuery += `&trackCount=${trackCountParam}`
+    if (periodParam) lastFmQuery += `&period=${periodParam}`
+    if (cardHolderParam) lastFmQuery += `&cardHolder=${cardHolderParam}`
+    if (authCodeParam) lastFmQuery += `&authCode=${authCodeParam}`
+    if (thanksParam) lastFmQuery += `&thanks=${thanksParam}`
+    if (orderParam) lastFmQuery += `&order=${orderParam}`
 
-    fetch(`https://api.stefdp.lol/receiptData/last.fm/${query}`).then(res => res.json()).then(data => {
+    fetch(`https://${apiUrl}/receiptData/last.fm/${lastFmQuery}`).then(res => res.json()).then(data => {
         if (data.message) {
             console.log(data.message)
             form.innerText = data.message
@@ -50,11 +52,11 @@ if (userParam) {
         form.innerText = 'Something went wrong'
     })
 } else if (accessToken) {
-    if (state && state == storedState) {
+    if (state && state === storedState) {
         localStorage.removeItem(stateKey)
         
         if (accessToken) {
-            fetch(`https://api.stefdp.lol/receiptData/spotify?accessToken=${accessToken}`).then(res => res.json()).then(data => {
+            fetch(`https://${apiUrl}/receiptData/spotify?accessToken=${accessToken}`).then(res => res.json()).then(data => {
                 if (data.message) {
                     console.log(data.message)
                     form.innerText = data.message
@@ -77,12 +79,12 @@ downloadButton.onclick = downloadReceipt
 function downloadReceipt() {
     receipt.style.paddingLeft = '30px'
     receipt.style.paddingRight = '30px'
-    receipt.style.backgroundImage = 'url("/__assets/receiptBackground.webp")';
+    receipt.style.backgroundImage = 'url("/assets/images/receiptBackground.webp")';
     receipt.style.backgroundRepeat = "repeat";
 
     downloadButton.style.display = 'none'
 
-    html2canvas(receipt).then(function (canvas) {
+    html2canvas(receipt).then((canvas) => {
         const dataURL = canvas.toDataURL("image/png")
 
         const a = document.createElement("a")
@@ -107,8 +109,7 @@ function downloadReceipt() {
 
 function spotifyLogin() {
     const clientId = 'e8ed68a2e9414910acec38a6aee777dd'
-    const redirectUri = 'https://receiptify.is-a.dev'
-    // const redirectUri = 'http://localhost:5500'
+    const redirectUri = window.location.origin || 'https://receiptify.is-a.dev'
 
     const state = generateRandomString(16)
 
@@ -124,7 +125,7 @@ function spotifyLogin() {
         `&state=${encodeURIComponent(state)}`
     ]
 
-    let url = urlParams.join('')
+    const url = urlParams.join('')
 
     window.location = url;
 }
@@ -170,13 +171,13 @@ function validate(type, input) {
 }
 
 function getHashParams() {
-    var params = {}
+    const params = {}
     
-    let exec,
-        regex = /([^&;=]+)=?([^&;]*)/g,
-        hash = window.location.hash.substring(1)
+    let exec
+    const regex = /([^&;=]+)=?([^&;]*)/g
+    const hash = window.location.hash.substring(1)
         
-    while ( exec = regex.exec(hash)) {
+    while (exec = regex.exec(hash)) {
         params[exec[1]] = decodeURIComponent(exec[2])
     }
     
@@ -200,11 +201,11 @@ function convertMsToTime(ms) {
 
     const splitDuration = duration.toFormat('yy:MM:dd:hh:mm:ss').split(':')
 
-        while(splitDuration[0] == '00') {
-            splitDuration.shift()
-        }
+    while(splitDuration[0] === '00') {
+        splitDuration.shift()
+    }
 
-        return splitDuration.join(':');
+    return splitDuration.join(':');
 }
 
 function sum(numbers) {
@@ -270,11 +271,14 @@ function showData(data) {
             </tr>
         `
     }).join('')
+
     receiptTitle.innerText = `${data.cardHolder}'s RECEIPT`
     totalTracks.innerText = `TOTAL TRACKS: ${data.tracks}`
-    data.period.toLowerCase() == 'spotify' ?
-        timePeriod.innerHTML = '<img src="/__assets/spotifyLogo.webp" class="spotify-logo">' :
-        timePeriod.innerText = data.period
+    
+    data.period.toLowerCase() === 'spotify'
+    ? timePeriod.innerHTML = '<img src="/assets/images/spotifyLogo.webp" class="spotify-logo">'
+    : timePeriod.innerText = data.period
+    
     orderFor.innerText = `ORDER #${data.orderNumber} FOR ${data.username}`
     dateGenerated.innerText = data.dateGenerated
     subtotalTime.innerText = data.subTotal.duration
