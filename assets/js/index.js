@@ -8,7 +8,7 @@ const form = document.getElementById('inputData')
 const spotifyButton = document.getElementById('spotifyLogin')
 const downloadButton = document.getElementById('downloadButton')
 
-const apiUrl = 'api.stefdp.lol'
+const apiUrl = 'api.stefdp.com'
 
 const queryParams = new URL(window.location.href).searchParams
 const hashParams = getHashParams()
